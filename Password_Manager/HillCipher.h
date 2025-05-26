@@ -6,27 +6,19 @@
 class HillCipher : public Cipher
 {
 public:
-    explicit HillCipher(const std::vector< std::vector<int> >& key);
-    std::string encrypt(const std::string& plain) override;
-    std::string decrypt(const std::string& coded) override;
+    static const std::string ID;
+
+    static Cipher* makeFromArgs(const std::vector<std::string>& args);
+
+    explicit HillCipher(const std::vector<std::vector<int>>& key);
+
+    std::string encrypt(const std::string& plain) const override;
+    std::string decrypt(const std::string& coded) const override;
+    std::string name() const override;
+    void writeConfig(std::ostream& out) const override;
+    void readConfig(std::istream& in) override;
+
 private:
-    std::vector< std::vector<int> > key;
-    std::vector< std::vector<int> > invKey;
+    std::vector<std::vector<int>> _key;
+    std::vector<std::vector<int>> _invKey;
 };
-
-class HillCreator : public CipherCreator
-{
-public:
-    HillCreator() : CipherCreator("hill") {}
-
-    Cipher* create(const std::vector<std::string>& a) const override
-    {
-        // тук се очаква квадратна матрица, подадена като поредица от числа
-        // парсването е оставено за имплементация
-        std::vector< std::vector<int> > key; // TODO
-        return new HillCipher(key);
-    }
-};
-
-//трябва да е в cpp файла
-static HillCreator __;

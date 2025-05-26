@@ -4,25 +4,25 @@
 
 class Cipher
 {
-
 public:
-
-    virtual std::string encrypt(const std::string& plain) = 0;
-    virtual std::string decrypt(const std::string& coded) = 0;
-    virtual ~Cipher() = default;
-
+    virtual std::string encrypt(const std::string& plain) const = 0;
+    virtual std::string decrypt(const std::string& coded) const = 0;
+    virtual std::string name() const = 0;
+    virtual void writeConfig(std::ostream& out) const = 0;
+    virtual void readConfig(std::istream& in) = 0;
+    virtual ~Cipher() {}
 };
 
 class CipherCreator
 {
 public:
     explicit CipherCreator(std::string name);
+    virtual Cipher* create(const std::vector<std::string>& args) const = 0;
+    const std::string& getName() const;
     virtual ~CipherCreator() = default;
 
-    virtual Cipher* create(const std::vector<std::string>& args) const = 0;
-    const char* getName() const { return _name; }
 
 private:
-    const char* _name;
+    std::string _name;
 };
 
