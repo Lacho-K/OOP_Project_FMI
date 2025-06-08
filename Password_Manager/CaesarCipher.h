@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Cipher.h"
-#include "AutoCreator.hpp"
 
 class CaesarCipher : public Cipher
 {
@@ -18,7 +17,20 @@ public:
     void readConfig(std::istream& in) override;
 
 private:
-    int _shift;
+
+    int shift;
+
+    static constexpr int MIN_SYMBOL = 32;
+    static constexpr int MAX_SYMBOL = 126;
+    static constexpr int RANGE = MAX_SYMBOL - MIN_SYMBOL + 1;
+
+    enum class ShiftDirection
+    {
+        LEFT = -1,
+        RIGHT = 1
+    };
+
+    char shiftSymbol(char c, ShiftDirection) const;
 };
 
 
