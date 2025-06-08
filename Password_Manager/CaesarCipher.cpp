@@ -49,21 +49,23 @@ void CaesarCipher::readConfig(std::istream& in)
 
 char CaesarCipher::shiftSymbol(char c, ShiftDirection dir) const
 {
+    // skip unsupported characters
     if (c < MIN_SYMBOL || c > MAX_SYMBOL)
         return c;
 
-    int targetIndex = c + (shift * static_cast<int>(dir));
-    char targetSymbol;
+    int offset = shift * static_cast<int>(dir);
 
-    if (targetIndex > MAX_SYMBOL)
-        targetSymbol = MIN_SYMBOL + (targetIndex - MAX_SYMBOL - 1);
-    else if (targetIndex < MIN_SYMBOL)
-        targetSymbol = MAX_SYMBOL - (MIN_SYMBOL - targetIndex - 1);
-    else
-        targetSymbol = targetIndex;
+    // convert character to 0-based index
+    int index = c - MIN_SYMBOL;
 
-    return targetSymbol;
+    // using modular arithmetic to handle very big shift
+    int shiftedIndex = (index + offset + RANGE) % RANGE;
+
+    // convert index back to actual character
+    return static_cast<char>(MIN_SYMBOL + shiftedIndex);
 }
+
+
 
 
 static AutoCreator<CaesarCipher> _;
