@@ -20,9 +20,9 @@ private:
 
     int shift;
 
-    static constexpr int MIN_SYMBOL = 32;
-    static constexpr int MAX_SYMBOL = 126;
-    static constexpr int RANGE = MAX_SYMBOL - MIN_SYMBOL + 1;
+    static const int MIN_SYMBOL = 32;
+    static const int MAX_SYMBOL = 126;
+    static const int RANGE = MAX_SYMBOL - MIN_SYMBOL + 1;
 
     enum class ShiftDirection
     {
@@ -30,7 +30,7 @@ private:
         RIGHT = 1
     };
 
-    char shiftSymbol(char c, ShiftDirection) const;
+    char shiftSymbol(char c, ShiftDirection dir) const;
 };
 
 

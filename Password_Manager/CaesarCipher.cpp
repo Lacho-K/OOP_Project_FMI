@@ -5,6 +5,9 @@
 
 Cipher* CaesarCipher::makeFromArgs(const std::vector<std::string>& args)
 {
+    if (args.empty())
+        throw std::invalid_argument("Missing shift ammount for CaesarCipher");
+
     int s = std::atoi(args[0].c_str());
     return new CaesarCipher(s);
 }
