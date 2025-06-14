@@ -22,7 +22,6 @@ private:
     std::vector<char> _decode;  // position to char
 
     void buildFromText(std::istream& input);
-    std::string numberToString(int number) const;
 };
 
 

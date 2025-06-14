@@ -1,7 +1,6 @@
 ﻿#include "TextCodeCipher.h"
 #include "AutoCreator.hpp"
-#include <vector>
-#include <string>
+#include "AsciiUtils.h"
 #include <fstream>
 
 const std::string TextCodeCipher::ID = "textcode";
@@ -22,7 +21,7 @@ Cipher* TextCodeCipher::makeFromArgs(const std::vector<std::string>& args)
 TextCodeCipher::TextCodeCipher(const std::string& referencePath)
     : _encode(128, -1)
 {
-    std::ifstream in(referencePath.c_str());
+    std::ifstream in(referencePath);
     if (!in)
         throw std::runtime_error("Cannot open reference file");
 
@@ -36,7 +35,7 @@ void TextCodeCipher::buildFromText(std::istream& input)
 
     while (input.get(c))
     {
-        if (c >= 0 && c < 128 && _encode[c] == -1)
+        if (AsciiUtils::inAsciiRange(c) && _encode[c] == -1)
         {
             _encode[c] = pos;
             _decode.push_back(c);
@@ -51,10 +50,10 @@ std::string TextCodeCipher::encrypt(const std::string& plain) const
 
     for (char c : plain)
     {
-        if (c < 0 || c >= 128 || _encode[c] == -1)
+        if (!AsciiUtils::inAsciiRange(c) || _encode[c] == -1)
             throw std::runtime_error("Unknown character in input");
 
-        result += numberToString(_encode[c]) + " ";
+        result += AsciiUtils::numberToString(_encode[c]) + " ";
     }
 
     return result;
@@ -69,7 +68,7 @@ std::string TextCodeCipher::decrypt(const std::string& coded) const
     {
         if (c == ' ')
         {
-            if (num < 0 || num >= _decode.size())
+            if (num < 0 || num >= static_cast<int>(_decode.size()))
                 throw std::runtime_error("Invalid code");
 
             result += _decode[num];
@@ -91,15 +90,12 @@ std::string TextCodeCipher::decrypt(const std::string& coded) const
 void TextCodeCipher::writeConfig(std::ostream& out) const
 {
     int count = _decode.size();
-
     if (count <= 0)
         throw std::runtime_error("Cannot write empty cipher");
 
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
-
-    out.write(&_decode[0], count);   
+    out.write(&_decode[0], count);
 }
-
 
 void TextCodeCipher::readConfig(std::istream& in)
 {
@@ -109,35 +105,19 @@ void TextCodeCipher::readConfig(std::istream& in)
     if (count <= 0)
         throw std::runtime_error("Invalid cipher");
 
-
     _decode = std::vector<char>(count);
     _encode = std::vector<int>(128, -1);
 
-	in.read(&_decode[0], count);
+    in.read(&_decode[0], count);
 
-	for (int i = 0; i < count; i++)
-	{
-		char c = _decode[i];
-		if (c >= 0 && c < 128)
-		{
-			_encode[c] = i;
-		}
-	}   
-}
-
-std::string TextCodeCipher::numberToString(int number) const
-{
-    if (number == 0)
-        return "0";
-
-    std::string result;
-    while (number > 0)
+    for (int i = 0; i < count; i++)
     {
-        result += char('0' + (number % 10));
-        number /= 10;
+        char c = _decode[i];
+        if (AsciiUtils::inAsciiRange(c))
+        {
+            _encode[c] = i;
+        }
     }
-
-    return result;
 }
 
 static AutoCreator<TextCodeCipher> _;

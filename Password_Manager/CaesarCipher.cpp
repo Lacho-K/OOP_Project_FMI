@@ -1,14 +1,15 @@
 #include "CaesarCipher.h"
 #include "AutoCreator.hpp"
+#include "AsciiUtils.h"
 #include <istream>
 #include <ostream>
 
 Cipher* CaesarCipher::makeFromArgs(const std::vector<std::string>& args)
 {
     if (args.empty())
-        throw std::invalid_argument("Missing shift ammount for CaesarCipher");
+        throw std::invalid_argument("Missing shift amount for CaesarCipher");
 
-    int s = std::atoi(args[0].c_str());
+    int s = AsciiUtils::parseInt(args[0]);
     return new CaesarCipher(s);
 }
 
@@ -52,23 +53,13 @@ void CaesarCipher::readConfig(std::istream& in)
 
 char CaesarCipher::shiftSymbol(char c, ShiftDirection dir) const
 {
-    // skip unsupported characters
-    if (c < MIN_SYMBOL || c > MAX_SYMBOL)
+    if (!AsciiUtils::inAsciiRange(c))
         return c;
 
     int offset = shift * static_cast<int>(dir);
-
-    // convert character to 0-based index
-    int index = c - MIN_SYMBOL;
-
-    // using modular arithmetic to handle very big shift
-    int shiftedIndex = (index + offset + RANGE) % RANGE;
-
-    // convert index back to actual character
-    return static_cast<char>(MIN_SYMBOL + shiftedIndex);
+    int index = AsciiUtils::decodeChar(c);
+    int shifted = AsciiUtils::modRange(index + offset);
+    return AsciiUtils::encodeChar(shifted);
 }
-
-
-
 
 static AutoCreator<CaesarCipher> _;

@@ -20,10 +20,6 @@ private:
 
     int shift;
 
-    static const int MIN_SYMBOL = 32;
-    static const int MAX_SYMBOL = 126;
-    static const int RANGE = MAX_SYMBOL - MIN_SYMBOL + 1;
-
     enum class ShiftDirection
     {
         LEFT = -1,
