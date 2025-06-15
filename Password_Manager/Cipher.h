@@ -10,7 +10,7 @@ public:
     virtual std::string name() const = 0;
     virtual void writeConfig(std::ostream& out) const = 0;
     virtual void readConfig(std::istream& in) = 0;
-    virtual ~Cipher() {}
+    virtual ~Cipher() = default;
 };
 
 class CipherCreator

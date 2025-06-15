@@ -89,7 +89,7 @@ std::string TextCodeCipher::decrypt(const std::string& coded) const
 
 void TextCodeCipher::writeConfig(std::ostream& out) const
 {
-    int count = _decode.size();
+    size_t count = _decode.size();
     if (count <= 0)
         throw std::runtime_error("Cannot write empty cipher");
 

@@ -1,20 +1,23 @@
 #pragma once
-#include "Cipher.h";
+#include "Cipher.h"
 
 class CipherFactory
 {
 public:
-    static CipherFactory& getFactory();
+    static CipherFactory& getInstance();
 
-    Cipher* createCipher(const std::string& name,
-        const std::vector<std::string>& args) const;
+    void registerCipher(const CipherCreator* creator);
 
-    void registerCipher(const CipherCreator* c);
+    Cipher* createCipher(std::istream& in) const;
 
 private:
-    CipherFactory();
+    CipherFactory() = default;
+    ~CipherFactory() = default;
+
     CipherFactory(const CipherFactory&) = delete;
     CipherFactory& operator=(const CipherFactory&) = delete;
 
-    std::vector<const CipherCreator*> _creators;
+    const CipherCreator* getCreator(const std::string& name) const;
+
+    std::vector<const CipherCreator*> creators;
 };

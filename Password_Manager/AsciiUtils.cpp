@@ -1,4 +1,4 @@
-#include "AsciiUtils.h"
+﻿#include "AsciiUtils.h"
 #include <stdexcept>
 
 namespace AsciiUtils
@@ -29,22 +29,28 @@ namespace AsciiUtils
         if (x == 0)
             return "0";
 
-        std::string result;
-        bool negative = x < 0;
-        if (negative)
-            x = -x;
+        int temp = x;
+        bool negative = temp < 0;
 
-        while (x > 0)
+        std::string result;
+
+        if (negative)
         {
-            result.insert(result.begin(), static_cast<char>('0' + (x % 10)));
-            x /= 10;
+            temp = -temp;
+            result = "-";
         }
 
-        if (negative)
-            result.insert(result.begin(), '-');
+        while (temp > 0)
+        {
+            char digit = '0' + (temp % 10);
+            result = digit + result; // добавя в началото
+            temp /= 10;
+        }
 
         return result;
     }
+
+
 
     int parseInt(const std::string& s)
     {
@@ -58,7 +64,7 @@ namespace AsciiUtils
             i = 1;
         }
 
-        for (; i < static_cast<int>(s.size()); i++)
+        for (; i < s.size(); i++)
         {
             char c = s[i];
             if (c < '0' || c > '9')

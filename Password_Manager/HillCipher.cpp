@@ -39,7 +39,7 @@ std::string HillCipher::decrypt(const std::string& coded) const
 
 std::string HillCipher::process(const std::string& text, const std::vector<std::vector<int>>& matrix) const
 {
-    int n = matrix.size();
+    size_t n = matrix.size();
     std::string padded = text;
 
     while (padded.size() % n != 0)
@@ -65,8 +65,10 @@ std::string HillCipher::process(const std::string& text, const std::vector<std::
 
 void HillCipher::writeConfig(std::ostream& out) const
 {
-    int n = _key.size();
+    size_t n = _key.size();
+
     out.write(reinterpret_cast<const char*>(&n), sizeof(n));
+
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
@@ -104,7 +106,8 @@ int HillCipher::modInverse(int a)
 
 std::vector<std::vector<int>> HillCipher::invertMatrix(const std::vector<std::vector<int>>& m)
 {
-    int n = m.size();
+    size_t n = m.size();
+
     int det = determinant(m) % AsciiUtils::RANGE;
     if (det < 0)
         det += AsciiUtils::RANGE;
@@ -130,7 +133,8 @@ std::vector<std::vector<int>> HillCipher::invertMatrix(const std::vector<std::ve
 
 std::vector<std::vector<int>> HillCipher::adjugateMatrix(const std::vector<std::vector<int>>& m) const
 {
-    int n = m.size();
+    size_t n = m.size();
+
     std::vector<std::vector<int>> adj(n, std::vector<int>(n));
 
     for (int i = 0; i < n; i++)
@@ -148,7 +152,8 @@ std::vector<std::vector<int>> HillCipher::adjugateMatrix(const std::vector<std::
 
 std::vector<std::vector<int>> HillCipher::getMinor(const std::vector<std::vector<int>>& m, int skipRow, int skipCol) const
 {
-    int n = m.size();
+    size_t n = m.size();
+
     std::vector<std::vector<int>> minor(n - 1, std::vector<int>(n - 1));
 
     for (int i = 0, mi = 0; i < n; i++)
@@ -167,7 +172,8 @@ std::vector<std::vector<int>> HillCipher::getMinor(const std::vector<std::vector
 
 int HillCipher::determinant(const std::vector<std::vector<int>>& m) const
 {
-    int n = m.size();
+    size_t n = m.size();
+
     if (n == 1)
         return m[0][0];
 

@@ -4,6 +4,8 @@
 #include <istream>
 #include <ostream>
 
+const std::string CaesarCipher::ID = "caesar";
+
 Cipher* CaesarCipher::makeFromArgs(const std::vector<std::string>& args)
 {
     if (args.empty())
