@@ -18,6 +18,19 @@ Cipher* TextCodeCipher::makeFromArgs(const std::vector<std::string>& args)
     return new TextCodeCipher(args[0]);
 }
 
+// създава валиден обект, не променя текста при encrypt и decrypt
+TextCodeCipher::TextCodeCipher()
+{
+    _encode.resize(128);
+    _decode.resize(128);
+    for (int i = 0; i < 128; i++)
+    {
+        _encode[i] = i;
+        _decode[i] = static_cast<char>(i);
+    }
+}
+
+
 TextCodeCipher::TextCodeCipher(const std::string& referencePath)
     : _encode(128, -1)
 {

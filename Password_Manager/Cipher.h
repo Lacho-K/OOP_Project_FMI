@@ -17,7 +17,7 @@ class CipherCreator
 {
 public:
     explicit CipherCreator(std::string name);
-    virtual Cipher* create(const std::vector<std::string>& args) const = 0;
+    virtual Cipher* create(std::istream& is) const = 0;
     const std::string& getName() const;
     virtual ~CipherCreator() = default;
 

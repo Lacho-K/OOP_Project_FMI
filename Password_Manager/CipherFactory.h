@@ -8,7 +8,7 @@ public:
 
     void registerCipher(const CipherCreator* creator);
 
-    Cipher* createCipher(std::istream& in) const;
+    Cipher* createCipher(const std::string& id, const std::vector<std::string>& args) const;
 
 private:
     CipherFactory() = default;

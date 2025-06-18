@@ -7,6 +7,7 @@ public:
     static const std::string ID;
     static Cipher* makeFromArgs(const std::vector<std::string>& args);
 
+    HillCipher();
     HillCipher(const std::vector<std::vector<int>>& key);
 
     std::string encrypt(const std::string& plain) const override;

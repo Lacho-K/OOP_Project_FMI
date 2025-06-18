@@ -12,24 +12,11 @@ void CipherFactory::registerCipher(const CipherCreator* creator)
     creators.push_back(creator);
 }
 
-Cipher* CipherFactory::createCipher(std::istream& in) const
+Cipher* CipherFactory::createCipher(const std::string& id, const std::vector<std::string>& args) const
 {
-    std::string name;
-    in >> name;
-
-    const CipherCreator* creator = getCreator(name);
+    const CipherCreator* creator = getCreator(id);
     if (!creator)
-    {
-        in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return nullptr;
-    }
-
-    std::vector<std::string> args;
-    std::string arg;
-    while (in >> arg)
-    {
-        args.push_back(arg);
-    }
 
     return creator->create(args);
 }

@@ -1,4 +1,4 @@
-#include "CaesarCipher.h"
+﻿#include "CaesarCipher.h"
 #include "AutoCreator.hpp"
 #include "AsciiUtils.h"
 #include <istream>
@@ -16,6 +16,10 @@ Cipher* CaesarCipher::makeFromArgs(const std::vector<std::string>& args)
 }
 
 CaesarCipher::CaesarCipher(int shift) : shift(shift)
+{}
+
+// създава валиден обект, не променя текста при encrypt и decrypt
+CaesarCipher::CaesarCipher() : shift(0)
 {}
 
 std::string CaesarCipher::encrypt(const std::string& plain) const

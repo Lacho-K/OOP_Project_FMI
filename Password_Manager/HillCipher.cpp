@@ -1,4 +1,4 @@
-#include "HillCipher.h"
+﻿#include "HillCipher.h"
 #include "AsciiUtils.h"
 #include "AutoCreator.hpp"
 #include <ostream>
@@ -22,6 +22,10 @@ Cipher* HillCipher::makeFromArgs(const std::vector<std::string>& args)
 
     return new HillCipher(key);
 }
+
+// създава валиден обект, не променя текста при encrypt и decrypt
+HillCipher::HillCipher() : _key{ {1, 0}, {0, 1} }, _invKey{ invertMatrix(_key)}
+{}
 
 HillCipher::HillCipher(const std::vector<std::vector<int>>& key)
     : _key(key), _invKey(invertMatrix(key))

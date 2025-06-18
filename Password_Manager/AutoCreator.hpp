@@ -6,11 +6,13 @@ class AutoCreator : public CipherCreator
 public:
     AutoCreator() : CipherCreator(T::ID) {}
 
-    Cipher* create(const std::vector<std::string>& args) const override;
+    Cipher* create(std::istream& is) const override;
 };
 
 template<typename T>
-inline Cipher* AutoCreator<T>::create(const std::vector<std::string>& args) const
+inline Cipher* AutoCreator<T>::create(std::istream& is) const
 {
-    return T::makeFromArgs(args);
+    Cipher* cipher = new T();
+    cipher->readConfig(in);   
+    return cipher;
 }

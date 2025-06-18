@@ -8,6 +8,7 @@ public:
 
     static Cipher* makeFromArgs(const std::vector<std::string>& args);
 
+    TextCodeCipher();
     explicit TextCodeCipher(const std::string& referencePath);
 
     std::string encrypt(const std::string& plain) const override;

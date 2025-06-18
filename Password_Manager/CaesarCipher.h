@@ -10,6 +10,8 @@ public:
 
     explicit CaesarCipher(int shift);
 
+    CaesarCipher();
+
     std::string encrypt(const std::string& plain) const override;
     std::string decrypt(const std::string& coded) const override;
     std::string name() const override;
