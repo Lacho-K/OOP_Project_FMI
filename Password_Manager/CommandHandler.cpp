@@ -74,16 +74,19 @@ void CommandHandler::handleCreate(const std::vector<std::string>& args)
     std::string cipherName = args[1];
 
     std::vector<std::string> cipherArgs;
-    for (int i = 2; i < args.size(); i++)
+    for (int i = 2; i < args.size() - 1; i++)
         cipherArgs.push_back(args[i]);
 
-    Cipher* cipher = CipherFactory::getInstance().createCipher(cipherName, cipherArgs);
+    Cipher* cipher = CipherFactory::getInstance().createCipherFromArgs(cipherName, cipherArgs);
     if (!cipher)
     {
         std::cout << "Unknown cipher.\n";
         return;
     }
-    manager.create(file, cipher, "");
+
+    std::string pass = args[args.size() - 1];
+
+    manager.create(file, cipher, pass);
     std::cout << "File created.\n";
 }
 
@@ -128,7 +131,7 @@ void CommandHandler::handleLoad(const std::vector<std::string>& args)
     if (args.size() == 2)
     {
         std::string password = manager.loadPassword(args[0], args[1]);
-        std::cout << "Password: " << password << "\n";
+        std::cout << password << "\n";
     }
     else
     {

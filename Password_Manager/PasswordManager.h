@@ -24,7 +24,9 @@ private:
     std::string _password;
     Cipher* _cipher;
     std::vector<PasswordEntry> _entries;
+    std::streampos _countPos;
 
     void loadFromFile();
-    void saveToFile() const;
+    void saveToFile();
+    void appendEntryToFile(std::ostream& out, const PasswordEntry& entry, bool append = false);
 };

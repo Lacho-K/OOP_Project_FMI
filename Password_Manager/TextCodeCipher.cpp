@@ -112,7 +112,7 @@ void TextCodeCipher::writeConfig(std::ostream& out) const
 
 void TextCodeCipher::readConfig(std::istream& in)
 {
-    int count;
+    size_t count;
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
 
     if (count <= 0)

@@ -84,7 +84,7 @@ void HillCipher::writeConfig(std::ostream& out) const
 
 void HillCipher::readConfig(std::istream& in)
 {
-    int n;
+    size_t n;
     in.read(reinterpret_cast<char*>(&n), sizeof(n));
 
     _key = std::vector<std::vector<int>>(n, std::vector<int>(n));

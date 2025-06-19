@@ -49,12 +49,12 @@ std::string CaesarCipher::name() const
 
 void CaesarCipher::writeConfig(std::ostream& out) const
 {
-    out << shift << '\n';
+    out.write(reinterpret_cast<const char*>(&shift), sizeof(shift));
 }
 
 void CaesarCipher::readConfig(std::istream& in)
 {
-    in >> shift;
+    in.read(reinterpret_cast<char*>(&shift), sizeof(shift));
 }
 
 char CaesarCipher::shiftSymbol(char c, ShiftDirection dir) const
