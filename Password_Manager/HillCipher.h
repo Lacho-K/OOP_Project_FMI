@@ -26,7 +26,4 @@ private:
     static std::vector<std::vector<int>> parseKey(std::istream& in);
 
     std::vector<std::vector<int>> invertMatrix(const std::vector<std::vector<int>>& m) const;
-    std::vector<std::vector<int>> adjugateMatrix(const std::vector<std::vector<int>>& m) const;
-    std::vector<std::vector<int>> getMinor(const std::vector<std::vector<int>>& m, size_t skipRow, size_t skipCol) const;
-    int determinant(const std::vector<std::vector<int>>& m) const;
 };

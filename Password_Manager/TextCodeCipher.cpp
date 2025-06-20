@@ -81,7 +81,7 @@ std::string TextCodeCipher::decrypt(const std::string& coded) const
     {
         if (c == ' ')
         {
-            if (num < 0 || num >= static_cast<int>(_decode.size()))
+            if (num < 0 || num >= _decode.size())
                 throw std::runtime_error("Invalid code");
 
             result += _decode[num];

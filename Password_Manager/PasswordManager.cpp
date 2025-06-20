@@ -201,7 +201,7 @@ bool PasswordManager::deletePassword(const std::string& website, const std::stri
     {
         if (_entries[i].website == website && _entries[i].user == user)
         {
-            _entries.erase(_entries.begin() + static_cast<long>(i));
+            _entries.erase(_entries.begin() + i);
             saveToFile();
             return true;
         }
@@ -216,11 +216,11 @@ bool PasswordManager::deleteWebsite(const std::string& website)
 
     bool removed = false;
 
-    for (size_t i = 0; i < _entries.size(); )
+    for (size_t i = 0; i < _entries.size();)
     {
         if (_entries[i].website == website)
         {
-            _entries.erase(_entries.begin() + static_cast<long>(i));
+            _entries.erase(_entries.begin() + i);
             removed = true;
         }
         else

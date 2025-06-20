@@ -116,7 +116,7 @@ void CommandHandler::handleCreate(const std::vector<std::string>& a)
 
     std::string file = a[0];
     std::string cipherId = a[1];
-    std::string master = a.back();
+    std::string pass = a.back();
 
     std::vector<std::string> cipherArgs;
 
@@ -133,7 +133,7 @@ void CommandHandler::handleCreate(const std::vector<std::string>& a)
         return;
     }
 
-    manager.create(file, cipher, master);
+    manager.create(file, cipher, pass);
     std::cout << "Created " << file << '\n';
 }
 
