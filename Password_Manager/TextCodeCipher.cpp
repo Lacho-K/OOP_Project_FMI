@@ -18,11 +18,13 @@ Cipher* TextCodeCipher::makeFromArgs(const std::vector<std::string>& args)
     return new TextCodeCipher(args[0]);
 }
 
-// създава валиден обект, не променя текста при encrypt и decrypt
+// създава валиден обект, не променя текста при encrypt и decrypt, използва се 
+//за createFromStream
 TextCodeCipher::TextCodeCipher()
 {
     _encode.resize(128);
     _decode.resize(128);
+
     for (int i = 0; i < 128; i++)
     {
         _encode[i] = i;
@@ -30,7 +32,7 @@ TextCodeCipher::TextCodeCipher()
     }
 }
 
-
+// Създава шифъра от референтен файл
 TextCodeCipher::TextCodeCipher(const std::string& referencePath)
     : _encode(128, -1)
 {
@@ -41,6 +43,7 @@ TextCodeCipher::TextCodeCipher(const std::string& referencePath)
     buildFromText(in);
 }
 
+// Чете текст и запомня първата поява на всеки ASCII символ
 void TextCodeCipher::buildFromText(std::istream& input)
 {
     char c;
@@ -50,8 +53,8 @@ void TextCodeCipher::buildFromText(std::istream& input)
     {
         if (AsciiUtils::inAsciiRange(c) && _encode[c] == -1)
         {
-            _encode[c] = pos;
-            _decode.push_back(c);
+            _encode[c] = pos;          // запомняме позицията при първа поява
+            _decode.push_back(c);      // позицията ще отговаря на символа
         }
         pos++;
     }
@@ -66,7 +69,8 @@ std::string TextCodeCipher::encrypt(const std::string& plain) const
         if (!AsciiUtils::inAsciiRange(c) || _encode[c] == -1)
             throw std::runtime_error("Unknown character in input");
 
-        result += AsciiUtils::numberToString(_encode[c]) + " ";
+        // Преобразуваме кода в число и го добавяме със space
+        result += AsciiUtils::numberToString(_encode[c]) + ' ';
     }
 
     return result;
@@ -103,7 +107,7 @@ std::string TextCodeCipher::decrypt(const std::string& coded) const
 void TextCodeCipher::writeConfig(std::ostream& out) const
 {
     size_t count = _decode.size();
-    if (count <= 0)
+    if (count == 0)
         throw std::runtime_error("Cannot write empty cipher");
 
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
@@ -112,24 +116,22 @@ void TextCodeCipher::writeConfig(std::ostream& out) const
 
 void TextCodeCipher::readConfig(std::istream& in)
 {
-    size_t count;
+    size_t count = 0;
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
-
-    if (count <= 0)
+    if (count == 0)
         throw std::runtime_error("Invalid cipher");
 
-    _decode = std::vector<char>(count);
-    _encode = std::vector<int>(128, -1);
+    _decode.assign(count, '\0');
+    _encode.assign(128, -1);
 
     in.read(&_decode[0], count);
 
-    for (int i = 0; i < count; i++)
+    // Възстановяване на encode таблицата от decode
+    for (size_t i = 0; i < count; i++)
     {
         char c = _decode[i];
         if (AsciiUtils::inAsciiRange(c))
-        {
-            _encode[c] = i;
-        }
+            _encode[c] = static_cast<int>(i);
     }
 }
 

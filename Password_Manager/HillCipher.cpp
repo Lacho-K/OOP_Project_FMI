@@ -47,7 +47,8 @@ Cipher* HillCipher::makeFromArgs(const std::vector<std::string>& args)
     return new HillCipher(parseKey(file));
 }
 
-// създава валиден обект, не променя текста при encrypt и decrypt
+// създава валиден обект, не променя текста при encrypt и decrypt, използва се 
+//за createFromStream
 HillCipher::HillCipher() 
     : _key{ {1, 0}, {0, 1} }, _invKey(invertMatrix(_key))
 {
@@ -162,7 +163,7 @@ int HillCipher::modInverse(int a)
     throw std::runtime_error("can't find modular Inverse");
 }
 
-// Обратна матрица с метода на Гаус–Жордан (функцията е създадена с помоща на chatgpt)
+// Обратна матрица с метода на Гаус–Жордан (функцията е създадена с помощта на AI)
 std::vector<std::vector<int>> HillCipher::invertMatrix(
     const std::vector<std::vector<int>>& a) const
 {
@@ -211,10 +212,13 @@ std::vector<std::vector<int>> HillCipher::invertMatrix(
         // Премахваме елементи в останалите редове
         for (size_t row = 0; row < n; ++row)
         {
-            if (row == col) continue;
+            if (row == col)
+                continue;
 
             int factor = aug[row][col];
-            if (factor == 0) continue;
+
+            if (factor == 0) 
+                continue;
 
             for (size_t j = 0; j < 2 * n; ++j)
             {

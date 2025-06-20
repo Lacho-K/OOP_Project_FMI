@@ -15,20 +15,17 @@ Cipher* CaesarCipher::makeFromArgs(const std::vector<std::string>& args)
     return new CaesarCipher(s);
 }
 
-CaesarCipher::CaesarCipher(int shift) : shift(shift)
-{}
+CaesarCipher::CaesarCipher(int shift) : shift(shift) {}
 
-// създава валиден обект, не променя текста при encrypt и decrypt
-CaesarCipher::CaesarCipher() : shift(0)
-{}
+// създава валиден обект, не променя текста при encrypt и decrypt, използва се 
+//за createFromStream
+CaesarCipher::CaesarCipher() : shift(0) {}
 
 std::string CaesarCipher::encrypt(const std::string& plain) const
 {
     std::string result;
     for (char c : plain)
-    {
-        result += shiftSymbol(c, ShiftDirection::LEFT);
-    }
+        result += shiftSymbol(c, ShiftDirection::LEFT); // местим налявo за encrypt
     return result;
 }
 
@@ -36,16 +33,11 @@ std::string CaesarCipher::decrypt(const std::string& coded) const
 {
     std::string result;
     for (char c : coded)
-    {
-        result += shiftSymbol(c, ShiftDirection::RIGHT);
-    }
+        result += shiftSymbol(c, ShiftDirection::RIGHT); // местим налявo за decrypt
     return result;
 }
 
-std::string CaesarCipher::name() const
-{
-    return ID;
-}
+std::string CaesarCipher::name() const { return ID; }
 
 void CaesarCipher::writeConfig(std::ostream& out) const
 {
@@ -62,10 +54,10 @@ char CaesarCipher::shiftSymbol(char c, ShiftDirection dir) const
     if (!AsciiUtils::inAsciiRange(c))
         return c;
 
-    int offset = shift * static_cast<int>(dir);
-    int index = AsciiUtils::decodeChar(c);
-    int shifted = AsciiUtils::modRange(index + offset);
-    return AsciiUtils::encodeChar(shifted);
+    int offset = shift * static_cast<int>(dir);       // с колко ще местим
+    int index = AsciiUtils::decodeChar(c);            // превръщаме символ в число
+    int shifted = AsciiUtils::modRange(index + offset); // модулно изместване
+    return AsciiUtils::encodeChar(shifted);           // връщаме обратно като символ
 }
 
 static AutoCreator<CaesarCipher> _;
