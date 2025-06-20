@@ -6,7 +6,7 @@
 class CommandHandler
 {
 public:
-    CommandHandler();
+    CommandHandler() = default;
     void run();
 
 private:

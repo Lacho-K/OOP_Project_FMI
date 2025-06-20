@@ -1,182 +1,225 @@
 #include "CommandHandler.h"
-#include "AsciiUtils.h"
 #include <iostream>
 
-CommandHandler::CommandHandler() {}
+static std::vector<std::string> split(const std::string& line)
+{
+    std::vector<std::string> parts;
+    std::string current;
+
+    for (size_t i = 0; i < line.size(); i++)
+    {
+        char c = line[i];
+
+        if (c == ' ' || c == '\t')
+        {
+            if (!current.empty())
+            {
+                parts.push_back(current);
+                current.clear();
+            }
+        }
+        else
+        {
+            current += c;
+        }
+    }
+
+    if (!current.empty())
+    {
+        parts.push_back(current);
+    }
+
+    return parts;
+}
 
 void CommandHandler::run()
 {
     std::string line;
-    char buffer[1024];
+
     while (true)
     {
         std::cout << ">> ";
-        if (!std::cin.getline(buffer, 1024))
+
+        char c;
+        line.clear();
+        while (std::cin.get(c) && c != '\n')
+        {
+            line += c;
+        }
+
+        if (line.empty())
+        {
             break;
-        line = buffer;
+        }
+
         executeCommand(line);
     }
 }
 
 void CommandHandler::executeCommand(const std::string& line)
 {
-    std::vector<std::string> args;
-    std::string current;
-    for (int i = 0; i < line.length(); i++)
-    {
-        if (line[i] == ' ')
-        {
-            if (!current.empty())
-            {
-                args.push_back(current);
-                current.clear();
-            }
-        }
-        else
-        {
-            current += line[i];
-        }
-    }
-    if (!current.empty())
-        args.push_back(current);
+    std::vector<std::string> args = split(line);
 
     if (args.empty())
+    {
         return;
+    }
 
     std::string cmd = args[0];
     args.erase(args.begin());
 
-    if (cmd == "create")
-        handleCreate(args);
-    else if (cmd == "open")
-        handleOpen(args);
-    else if (cmd == "save")
-        handleSave(args);
-    else if (cmd == "load")
-        handleLoad(args);
-    else if (cmd == "update")
-        handleUpdate(args);
-    else if (cmd == "delete")
-        handleDelete(args);
-    else
-        std::cout << "Unknown command.\n";
-}
-
-void CommandHandler::handleCreate(const std::vector<std::string>& args)
-{
-    if (args.size() < 3)
-    {
-        std::cout << "Invalid usage.\n";
-        return;
-    }
-
-    std::string file = args[0];
-    std::string cipherName = args[1];
-
-    std::vector<std::string> cipherArgs;
-    for (int i = 2; i < args.size() - 1; i++)
-        cipherArgs.push_back(args[i]);
-
-    Cipher* cipher = CipherFactory::getInstance().createCipherFromArgs(cipherName, cipherArgs);
-    if (!cipher)
-    {
-        std::cout << "Unknown cipher.\n";
-        return;
-    }
-
-    std::string pass = args[args.size() - 1];
-
-    manager.create(file, cipher, pass);
-    std::cout << "File created.\n";
-}
-
-void CommandHandler::handleOpen(const std::vector<std::string>& args)
-{
-    if (args.size() < 2)
-    {
-        std::cout << "Invalid usage.\n";
-        return;
-    }
-
     try
     {
-        manager.open(args[0], args[1]);
-        std::cout << "File opened.\n";
+        if (cmd == "create")
+        {
+            handleCreate(args);
+        }
+        else if (cmd == "open")
+        {
+            handleOpen(args);
+        }
+        else if (cmd == "save")
+        {
+            handleSave(args);
+        }
+        else if (cmd == "load")
+        {
+            handleLoad(args);
+        }
+        else if (cmd == "update")
+        {
+            handleUpdate(args);
+        }
+        else if (cmd == "delete")
+        {
+            handleDelete(args);
+        }
+        else
+        {
+            std::cout << "Unknown command\n";
+        }
     }
     catch (const std::exception& e)
     {
-        std::cout << "Error: " << e.what() << "\n";
+        std::cout << "Error: " << e.what() << '\n';
     }
 }
 
-void CommandHandler::handleSave(const std::vector<std::string>& args)
+
+void CommandHandler::handleCreate(const std::vector<std::string>& a)
 {
-    if (args.size() < 3)
+    if (a.size() < 3)
     {
-        std::cout << "Invalid usage.\n";
+        std::cout << "Usage: create <file> <cipher> <cipher-args...> <file-pass>\n";
         return;
     }
-    manager.savePassword(args[0], args[1], args[2]);
-    std::cout << "Password saved.\n";
+
+    std::string file = a[0];
+    std::string cipherId = a[1];
+    std::string master = a.back();
+
+    std::vector<std::string> cipherArgs;
+
+    for (size_t i = 2; i < a.size() - 1; ++i)
+    {
+        cipherArgs.push_back(a[i]);
+    }
+
+    Cipher* cipher = CipherFactory::getInstance().createCipherFromArgs(cipherId, cipherArgs);
+
+    if (cipher == nullptr)
+    {
+        std::cout << "Unknown cipher\n";
+        return;
+    }
+
+    manager.create(file, cipher, master);
+    std::cout << "Created " << file << '\n';
 }
 
-void CommandHandler::handleLoad(const std::vector<std::string>& args)
+void CommandHandler::handleOpen(const std::vector<std::string>& a)
 {
-    if (args.size() < 1)
+    if (a.size() != 2)
     {
-        std::cout << "Invalid usage.\n";
+        std::cout << "Usage: open <file> <file-pass>\n";
         return;
     }
 
-    if (args.size() == 2)
+    manager.open(a[0], a[1]);
+    std::cout << "Opened " << a[0] << '\n';
+}
+
+void CommandHandler::handleSave(const std::vector<std::string>& a)
+{
+    if (a.size() != 3)
     {
-        std::string password = manager.loadPassword(args[0], args[1]);
-        std::cout << password << "\n";
+        std::cout << "Usage: save <site> <user> <pass>\n";
+        return;
+    }
+
+    manager.savePassword(a[0], a[1], a[2]);
+    std::cout << "Saved.\n";
+}
+
+void CommandHandler::handleLoad(const std::vector<std::string>& a)
+{
+    if (a.empty())
+    {
+        std::cout << "Usage: load <site> [user]\n";
+        return;
+    }
+
+    if (a.size() == 2)
+    {
+        std::string pass = manager.loadPassword(a[0], a[1]);
+        std::cout << pass << '\n';
     }
     else
     {
-        std::vector<PasswordEntry> list = manager.loadAllForSite(args[0]);
-        for (int i = 0; i < list.size(); i++)
+        std::vector<PasswordEntry> list = manager.loadAllForSite(a[0]);
+
+        if (list.empty())
         {
-            std::cout << list[i].user << " -> " << manager.loadPassword(list[i].website, list[i].user) << "\n";
+            std::cout << "No entries for " << a[0] << '\n';
+            return;
+        }
+
+        for (size_t i = 0; i < list.size(); ++i)
+        {
+            std::string original = manager.loadPassword(list[i].website, list[i].user);
+            std::cout << list[i].user << " -> " << original << '\n';
         }
     }
 }
 
-void CommandHandler::handleUpdate(const std::vector<std::string>& args)
+void CommandHandler::handleUpdate(const std::vector<std::string>& a)
 {
-    if (args.size() < 3)
+    if (a.size() != 3)
     {
-        std::cout << "Invalid usage.\n";
+        std::cout << "Usage: update <site> <user> <new-pass>\n";
         return;
     }
 
-    if (manager.updatePassword(args[0], args[1], args[2]))
-        std::cout << "Password updated.\n";
-    else
-        std::cout << "Update failed.\n";
+    manager.updatePassword(a[0], a[1], a[2]);
+    std::cout << "Updated.\n";
 }
 
-void CommandHandler::handleDelete(const std::vector<std::string>& args)
+void CommandHandler::handleDelete(const std::vector<std::string>& a)
 {
-    if (args.size() < 1)
+    if (a.empty())
     {
-        std::cout << "Invalid usage.\n";
+        std::cout << "Usage: delete <site> [user]\n";
         return;
     }
 
-    if (args.size() == 1)
+    if (a.size() == 1)
     {
-        if (manager.deleteWebsite(args[0]))
-            std::cout << "Website deleted.\n";
-        else
-            std::cout << "Website not found.\n";
+        manager.deleteWebsite(a[0]);
+        std::cout << "Deleted all entries for " << a[0] << '\n';
     }
     else
     {
-        if (manager.deletePassword(args[0], args[1]))
-            std::cout << "Password deleted.\n";
-        else
-            std::cout << "Password not found.\n";
+        manager.deletePassword(a[0], a[1]);
+        std::cout << "Deleted.\n";
     }
 }

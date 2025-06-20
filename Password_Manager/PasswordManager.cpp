@@ -1,15 +1,23 @@
 ﻿#include "PasswordManager.h"
-#include <fstream>
 #include "CipherFactory.h"
+#include <fstream>
 
-PasswordManager::PasswordManager() : _cipher(nullptr) {}
+PasswordManager::PasswordManager() : _cipher(nullptr)
+{
+}
 
 void PasswordManager::create(const std::string& file, Cipher* cipher, const std::string& password)
 {
+    if (cipher == nullptr)
+    {
+        throw std::invalid_argument("Null cipher pointer passed to create()");
+    }
+
     _filename = file;
     _cipher = cipher;
     _password = password;
     _entries.clear();
+
     saveToFile();
 }
 
@@ -19,49 +27,60 @@ void PasswordManager::open(const std::string& file, const std::string& password)
     _password = password;
 
     std::ifstream in(_filename.c_str(), std::ios::binary);
-    if (!in)
-        throw std::runtime_error("Cannot open file");
 
-    size_t passLen;
+    if (!in)
+    {
+        throw std::runtime_error("Cannot open file: " + _filename);
+    }
+
+    size_t passLen = 0;
     in.read(reinterpret_cast<char*>(&passLen), sizeof(passLen));
+
+
     std::string encryptedPass(passLen, ' ');
     in.read(&encryptedPass[0], passLen);
 
-    size_t cipherNameLen;
+    size_t cipherNameLen = 0;
     in.read(reinterpret_cast<char*>(&cipherNameLen), sizeof(cipherNameLen));
+
     std::string cipherName(cipherNameLen, ' ');
     in.read(&cipherName[0], cipherNameLen);
 
     Cipher* cipher = CipherFactory::getInstance().createCipherFromStream(cipherName, in);
-    if (!cipher)
-        throw std::runtime_error("Unknown cipher");
+
+    if (cipher == nullptr)
+    {
+        throw std::runtime_error("Unknown cipher id: " + cipherName);
+    }
 
     std::string decrypted = cipher->decrypt(encryptedPass);
+
     if (decrypted != _password)
     {
         delete cipher;
-        throw std::invalid_argument("Incorrect password");
+        throw std::invalid_argument("Incorrect file password");
     }
 
-    if (_cipher)
+    if (_cipher != nullptr)
     {
         delete _cipher;
-        _cipher = nullptr;
     }
 
     _cipher = cipher;
 
-    size_t count;
-
     _countPos = in.tellg();
 
+    size_t count = 0;
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
 
     _entries.clear();
 
-    for (int i = 0; i < count; i++)
+    for (size_t i = 0; i < count; ++i)
     {
-        size_t wlen, ulen, plen;
+        size_t wlen = 0;
+        size_t ulen = 0;
+        size_t plen = 0;
+
         in.read(reinterpret_cast<char*>(&wlen), sizeof(wlen));
         std::string w(wlen, ' ');
         in.read(&w[0], wlen);
@@ -74,106 +93,182 @@ void PasswordManager::open(const std::string& file, const std::string& password)
         std::string p(plen, ' ');
         in.read(&p[0], plen);
 
-        PasswordEntry e = { w, u, p };
+        PasswordEntry e;
+        e.website = w;
+        e.user = u;
+        e.encoded = p;
+
         _entries.push_back(e);
     }
 }
 
+// актуализира count и добавя само в края
 void PasswordManager::savePassword(const std::string& website, const std::string& user, const std::string& password)
 {
+    validateFile();
+
+    for (size_t i = 0; i < _entries.size(); ++i)
+    {
+        if (_entries[i].website == website && _entries[i].user == user)
+        {
+            throw std::runtime_error("Entry for website \"" + website + "\" and user \"" + user + "\" already exists. Use update instead.");
+        }
+    }
+
     PasswordEntry entry;
     entry.website = website;
     entry.user = user;
     entry.encoded = _cipher->encrypt(password);
     _entries.push_back(entry);
 
-    //ползваме fstream за да не загубим вече записаната информация
-    std::fstream out(_filename.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+    // отваряме с този режим за да не изтрием вече записаната информация
+    std::fstream out(_filename.c_str(),
+        std::ios::in |
+        std::ios::out |
+        std::ios::binary |
+        std::ios::ate);
+
+    // true параметър за да акруализираме count
     appendEntryToFile(out, entry, true);
 }
 
 std::string PasswordManager::loadPassword(const std::string& website, const std::string& user) const
 {
-    for (int i = 0; i < _entries.size(); i++)
+    validateFile();
+
+    for (size_t i = 0; i < _entries.size(); ++i)
     {
         if (_entries[i].website == website && _entries[i].user == user)
-            return "Password: " + _cipher->decrypt(_entries[i].encoded);
+        {
+            return _cipher->decrypt(_entries[i].encoded);
+        }
     }
-    return "User: " + user + " not found in Website: " + website;
+
+    throw std::runtime_error("No entry for site \"" + website + "\" and user \"" + user + "\"");
 }
 
 std::vector<PasswordEntry> PasswordManager::loadAllForSite(const std::string& website) const
 {
+    validateFile();
+
     std::vector<PasswordEntry> result;
-    for (int i = 0; i < _entries.size(); i++)
+
+    for (size_t i = 0; i < _entries.size(); ++i)
     {
         if (_entries[i].website == website)
+        {
             result.push_back(_entries[i]);
+        }
     }
+
+    if (result.empty())
+    {
+        throw std::runtime_error("No entries for site \"" + website + "\"");
+    }
+
     return result;
 }
 
 bool PasswordManager::updatePassword(const std::string& website, const std::string& user, const std::string& newPassword)
 {
-    for (int i = 0; i < _entries.size(); i++)
+    validateFile();
+
+    for (size_t i = 0; i < _entries.size(); ++i)
     {
         if (_entries[i].website == website && _entries[i].user == user)
         {
             std::string current = _cipher->decrypt(_entries[i].encoded);
+
             if (current == newPassword)
-                return false;
+            {
+                throw std::invalid_argument("New password is identical to the existing one");
+            }
+
             _entries[i].encoded = _cipher->encrypt(newPassword);
             saveToFile();
             return true;
         }
     }
-    return false;
+
+    throw std::runtime_error("No entry to update for site \"" + website + "\" and user \"" + user + "\"");
 }
 
 bool PasswordManager::deletePassword(const std::string& website, const std::string& user)
 {
-    for (int i = 0; i < _entries.size(); i++)
+    validateFile();
+
+    for (size_t i = 0; i < _entries.size(); ++i)
     {
         if (_entries[i].website == website && _entries[i].user == user)
         {
-            _entries.erase(_entries.begin() + i);
+            _entries.erase(_entries.begin() + static_cast<long>(i));
             saveToFile();
             return true;
         }
     }
-    return false;
+
+    throw std::runtime_error("No entry to delete for site \"" + website + "\" and user \"" + user + "\"");
 }
 
 bool PasswordManager::deleteWebsite(const std::string& website)
 {
-    bool found = false;
-    for (int i = 0; i < _entries.size(); )
+    validateFile();
+
+    bool removed = false;
+
+    for (size_t i = 0; i < _entries.size(); )
     {
         if (_entries[i].website == website)
         {
-            _entries.erase(_entries.begin() + i);
-            found = true;
+            _entries.erase(_entries.begin() + static_cast<long>(i));
+            removed = true;
         }
         else
         {
-            i++;
+            ++i;
         }
     }
-    if (found) saveToFile();
-    return found;
+
+    if (!removed)
+    {
+        throw std::runtime_error("No entries found for site \"" + website + "\"");
+    }
+
+    saveToFile();
+    return true;
+}
+
+void PasswordManager::validateFile() const
+{
+    if (_cipher == nullptr)
+    {
+        throw std::runtime_error("No file opened or created");
+    }
 }
 
 void PasswordManager::saveToFile()
 {
+    if (_cipher == nullptr)
+    {
+        throw std::runtime_error("Cannot save: no cipher loaded");
+    }
+
     std::ofstream out(_filename.c_str(), std::ios::binary);
+
+    if (!out)
+    {
+        throw std::runtime_error("Cannot write to file");
+    }
 
     std::string encryptedPass = _cipher->encrypt(_password);
     size_t passLen = encryptedPass.length();
+
     out.write(reinterpret_cast<const char*>(&passLen), sizeof(passLen));
     out.write(encryptedPass.c_str(), passLen);
 
     std::string cipherName = _cipher->name();
     size_t cipherNameLen = cipherName.length();
+
     out.write(reinterpret_cast<const char*>(&cipherNameLen), sizeof(cipherNameLen));
     out.write(cipherName.c_str(), cipherNameLen);
 
@@ -184,7 +279,7 @@ void PasswordManager::saveToFile()
     _countPos = out.tellp();
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    for (int i = 0; i < count; i++)
+    for (size_t i = 0; i < count; ++i)
     {
         appendEntryToFile(out, _entries[i]);
     }
@@ -194,13 +289,14 @@ void PasswordManager::appendEntryToFile(std::ostream& out, const PasswordEntry& 
 {
     if (updateCount)
     {
-        std::streampos currentPos = out.tellp();
+        std::streampos cur = out.tellp();
         out.seekp(_countPos);
-        size_t currentCount = _entries.size();
-        out.write(reinterpret_cast<const char*>(&currentCount), sizeof(currentCount));
-        out.seekp(currentPos);
-    }
 
+        size_t cnt = _entries.size();
+        out.write(reinterpret_cast<const char*>(&cnt), sizeof(cnt));
+
+        out.seekp(cur);
+    }
 
     size_t wlen = entry.website.length();
     size_t ulen = entry.user.length();
@@ -215,4 +311,3 @@ void PasswordManager::appendEntryToFile(std::ostream& out, const PasswordEntry& 
     out.write(reinterpret_cast<const char*>(&plen), sizeof(plen));
     out.write(entry.encoded.c_str(), plen);
 }
-

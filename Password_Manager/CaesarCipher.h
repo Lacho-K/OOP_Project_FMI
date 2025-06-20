@@ -30,12 +30,3 @@ private:
 
     char shiftSymbol(char c, ShiftDirection dir) const;
 };
-
-
-//class CaesarCreator : public CipherCreator
-//{
-//public:
-//    CaesarCreator() : CipherCreator("caesar") {}
-//
-//    Cipher* create(const std::vector<std::string>& a) const override;
-//};

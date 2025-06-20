@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Cipher.h"
+
 template<typename T>
 class AutoCreator : public CipherCreator
 {

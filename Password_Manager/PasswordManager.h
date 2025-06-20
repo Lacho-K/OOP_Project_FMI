@@ -1,4 +1,4 @@
-    #pragma once
+#pragma once
 
 #include "Cipher.h"
 #include "PasswordEntry.h"
@@ -26,7 +26,9 @@ private:
     std::vector<PasswordEntry> _entries;
     std::streampos _countPos;
 
-    void loadFromFile();
+    void validateFile() const;
+
+    //void loadFromFile();
     void saveToFile();
     void appendEntryToFile(std::ostream& out, const PasswordEntry& entry, bool append = false);
 };

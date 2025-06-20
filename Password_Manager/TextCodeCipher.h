@@ -19,18 +19,8 @@ public:
     void readConfig(std::istream& in) override;
 
 private:
-    std::vector<int> _encode;   // ASCII to position
-    std::vector<char> _decode;  // position to char
+    std::vector<int> _encode;   // ASCII към позиция
+    std::vector<char> _decode;  // позиция към char
 
     void buildFromText(std::istream& input);
 };
-
-
-
-//class TextCodeCreator : public CipherCreator
-//{
-//public:
-//    TextCodeCreator() : CipherCreator("textcode") {}
-//
-//    Cipher* create(const std::vector<std::string>& a) const override;
-//};
