@@ -100,6 +100,7 @@ void HillCipher::readConfig(std::istream& in)
 {
     size_t n = 0;
     in.read(reinterpret_cast<char*>(&n), sizeof(n));
+    
     if (!in || n == 0)
     {
         throw std::runtime_error("Невалиден размер на матрица в конфигурацията");

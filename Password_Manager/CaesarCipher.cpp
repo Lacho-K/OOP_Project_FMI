@@ -33,7 +33,7 @@ std::string CaesarCipher::decrypt(const std::string& coded) const
 {
     std::string result;
     for (char c : coded)
-        result += shiftSymbol(c, ShiftDirection::RIGHT); // местим налявo за decrypt
+        result += shiftSymbol(c, ShiftDirection::RIGHT); // местим надясно за decrypt
     return result;
 }
 
@@ -54,8 +54,8 @@ char CaesarCipher::shiftSymbol(char c, ShiftDirection dir) const
     if (!AsciiUtils::inAsciiRange(c))
         return c;
 
-    int offset = shift * static_cast<int>(dir);       // с колко ще местим
-    int index = AsciiUtils::decodeChar(c);            // превръщаме символ в число
+    int offset = shift * static_cast<int>(dir);       // с колко ще местим и накъде
+    int index = AsciiUtils::decodeChar(c);            // превръщаме символа в индекс
     int shifted = AsciiUtils::modRange(index + offset); // модулно изместване
     return AsciiUtils::encodeChar(shifted);           // връщаме обратно като символ
 }
