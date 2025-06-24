@@ -4,6 +4,7 @@
 class CaesarCipher : public Cipher
 {
 public:
+
     static const std::string ID;
 
     static Cipher* makeFromArgs(const std::vector<std::string>& args);
